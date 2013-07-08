@@ -1,0 +1,18 @@
+.appearance_page_theme-options .form-table th {
+	width: 0;
+	margin: 0 10px;
+}
+
+.appearance_page_theme-options  .form-table .button {
+	margin: 0 10px;
+}
+
+.appearance_page_theme-options .widefat th input[type=checkbox] {
+margin: 15px 10px;
+}
+
+.appearance_page_theme-options .form-table tbody em {
+	margin: 10px 0;
+}
+
+
