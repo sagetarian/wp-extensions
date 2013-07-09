@@ -135,11 +135,11 @@ function _wto_get_option( $option_id, $skip_empty_rows = false ) {
 			$value[ $row_id ] = $row;
 
 		endforeach; 
-		return $value;
+		return stripslashes_deep( $value );
 
 	endif;
 
-	return $wto_options[ $option_id ];
+	return stripslashes_deep( $wto_options[ $option_id ] );
 }
 
 function _wto_update_option( $option_id, $value ) {

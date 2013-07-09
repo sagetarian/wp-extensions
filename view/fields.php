@@ -57,11 +57,13 @@ function wpext_display_text_field( $field_id, $field, $source = 'posts' ) {
 			$value_override = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
 	endswitch;
 
+	$value_override = htmlentities( $value_override, ENT_QUOTES );
+
 	?>
 
 	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
 	<p>
-		<input name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" class="widefat" value="<?php echo $value_override; ?>" placeholder="<?php echo $placeholder; ?>" />
+		<input name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" class="widefat" value='<?php echo $value_override; ?>' placeholder="<?php echo $placeholder; ?>" />
 		<?php if( $description ) : ?><em><?php echo $description; ?></em><?php endif; ?>
 	</p>
 
@@ -93,7 +95,7 @@ function wpext_display_checkbox_field( $field_id, $field ) {
 
 	
 	<p>
-		<input name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="checkbox" value="<?php echo $value; ?>" <?php checked( $value, $value_override ); ?> />
+		<input name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="checkbox" value='<?php echo $value; ?>' <?php checked( $value, $value_override ); ?> />
 		<?php if( $name ) : ?><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?></label><?php endif; ?>
 	</p>
 
@@ -132,7 +134,7 @@ function wpext_display_select_field( $field_id, $field ) {
 	<p>
 		<select name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text">
 			<?php foreach( $options as $opt_value => $option ) : ?>
-			<option value="<?php echo $opt_value ? $opt_value : $option; ?>" <?php selected( $opt_value ? $opt_value : $option, $current ); ?>><?php echo $option; ?></option>
+			<option value='<?php echo $opt_value ? $opt_value : $option; ?>' <?php selected( $opt_value ? $opt_value : $option, $current ); ?>><?php echo $option; ?></option>
 			<?php endforeach; ?>
 		</select>
 	</p>
@@ -210,7 +212,7 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
 				<th class="check-column"><input type="checkbox" /></th>
 
 				<?php foreach( $field as $subfield_id => $subfield ) : if( !is_array( $subfield ) || !$subfield['type'] ) continue; $subfield['value_override'] = $row[$subfield_id]; ?>
-				<td><?php do_action( 'wcpt_display_'.$subfield['type'].'_field', $field_id.'['.$rows.']['.$subfield_id.']', $subfield ); ?></td>
+				<td><?php do_action( 'wcpt_display_'.$subfield['type'].'_field', $field_id.'['.$rows.']['.$subfield_id.']', $subfield, $source ); ?></td>
 				<?php endforeach; ?>
 
 			</tr>
@@ -227,7 +229,7 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
 				<th class="check-column"><input type="checkbox" /></th>
 
 				<?php $row = 0; foreach( $field as $subfield_id => $subfield ) : if( !is_array( $subfield ) || !$subfield['type'] ) continue; $row_id = '%name%'; if( $have_textarea ) $row_id = $row_count; ?>
-				<td><?php do_action( 'wcpt_display_'.$subfield['type'].'_field', $field_id.'['.$row_id.']['.$subfield_id.']', $subfield ); ?></td>
+				<td><?php do_action( 'wcpt_display_'.$subfield['type'].'_field', $field_id.'['.$row_id.']['.$subfield_id.']', $subfield, $source ); ?></td>
 				<?php endforeach; ?>
 
 			</tr>
@@ -351,7 +353,7 @@ function wpext_display_image_field( $field_id, $field ) {
 	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
 	
 	<div class="widefat">
-		<input readonly name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" value="<?php echo $value_override; ?>" placeholder="<?php echo $placeholder; ?>" />
+		<input readonly name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" value='<?php echo $value_override; ?>' placeholder="<?php echo $placeholder; ?>" />
 		<input type="button" id="wcpt_<?php echo $id; ?>_button" class="wcpt_image_button button" value="Choose Image" /><br/>
 	</div>
 
