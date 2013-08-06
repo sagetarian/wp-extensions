@@ -70,6 +70,99 @@ function wpext_display_text_field( $field_id, $field, $source = 'posts' ) {
 	<?php
 }
 
+
+/**
+ * A field that acts as a simple textarea
+ *
+ * @param field_id 	the fields id
+ * @param field 	the field options:
+ *		field[name] - the label of the input
+ *      field[placeholder] - the inputs placeholder
+ *      field[description] - a <em> description
+ *
+ * @since 1.0
+ * @author shannon
+ */
+function wpext_display_simple_textarea_field( $field_id, $field, $source = 'posts' ) {
+
+	global $post;
+
+
+	$id = str_replace( array('[', ']'), '_', $field_id );
+	extract( $field );
+
+	switch( $source ) :
+		case 'posts' :
+			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			break;
+		default:
+			$value_override = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
+
+	$value_override = htmlentities( $value_override, ENT_QUOTES );
+
+	?>
+
+	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
+	<p>
+		<textarea name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" class="widefat"><?php echo $value_override; ?></textarea>
+		<?php if( $description ) : ?><em><?php echo $description; ?></em><?php endif; ?>
+	</p>
+
+	<?php
+}
+
+/**
+ * A field that acts as a text input
+ *
+ * @param field_id 	the fields id
+ * @param field 	the field options:
+ *		field[name] - the label of the input
+ *      field[placeholder] - the inputs placeholder
+ *      field[description] - a <em> description
+ *
+ * @since 1.0
+ * @author shannon
+ */
+function wpext_display_date_field( $field_id, $field, $source = 'posts' ) {
+
+	global $post;
+
+
+	$id = str_replace( array('[', ']'), '_', $field_id );
+	extract( $field );
+
+	switch( $source ) :
+		case 'posts' :
+			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			break;
+		default:
+			$value_override = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
+
+	$value_override = htmlentities( $value_override, ENT_QUOTES );
+
+	?>
+
+	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
+	<p>
+		<input name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" class="widefat datepicker" value='<?php echo $value_override; ?>' placeholder="<?php echo $placeholder; ?>" />
+		<?php if( $description ) : ?><em><?php echo $description; ?></em><?php endif; ?>
+	</p>
+
+	<script>
+		jQuery(function() {
+			jQuery('.datepicker').datepicker();
+		});
+	</script>
+
+	<?php
+
+	wp_enqueue_script( 'jquery-ui-datepicker' );
+	wp_enqueue_style('jquery-style', 'http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/smoothness/jquery-ui.css');
+
+}
+
 /**
  * A field that acts as a checkbox input
  *
@@ -82,14 +175,20 @@ function wpext_display_text_field( $field_id, $field, $source = 'posts' ) {
  * @since 1.0
  * @author shannon
  */
-function wpext_display_checkbox_field( $field_id, $field ) {
+function wpext_display_checkbox_field( $field_id, $field, $source = 'posts' ) {
 	
 	global $post;
 
 	$id = str_replace( array('[', ']'), '_', $field_id );
 	extract( $field );
 
-	$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+	switch( $source ) :
+		case 'posts' :
+			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			break;
+		default:
+			$value_override = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
 
 	?>
 
@@ -116,7 +215,7 @@ function wpext_display_checkbox_field( $field_id, $field ) {
  * @since 1.0
  * @author shannon
  */
-function wpext_display_select_field( $field_id, $field ) {
+function wpext_display_select_field( $field_id, $field, $source = 'posts' ) {
 	
 	global $post;
 	global $wcpt_prefix;
@@ -124,7 +223,14 @@ function wpext_display_select_field( $field_id, $field ) {
 	$id = str_replace( array('[', ']'), '_', $field_id );
 	extract( $field );
 
-	$current = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+	switch( $source ) :
+		case 'posts' :
+			$current = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			break;
+		default:
+			$current = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
+
 	if( !$current )
 		$current = $default_value;
 
@@ -311,14 +417,20 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
  * @since 1.0
  * @author shannon
  */
-function wpext_display_textarea_field( $field_id, $field ) {
+function wpext_display_textarea_field( $field_id, $field, $source = 'posts' ) {
 
 	global $post;
 	
 	$id = str_replace( array('[', ']'), '_', $field_id );
 	extract( $field );
 
-	$content = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+	switch( $source ) :
+		case 'posts' :
+			$content = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			break;
+		default:
+			$content = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
 
 	wp_editor( $content, 'wcpt_'.$id, array(
 		'media_buttons' => false,
@@ -337,7 +449,7 @@ function wpext_display_textarea_field( $field_id, $field ) {
  * @since 1.0
  * @author shannon
  */
-function wpext_display_image_field( $field_id, $field ) {
+function wpext_display_image_field( $field_id, $field, $source = 'posts' ) {
 
 	extract( $field );
 
@@ -346,7 +458,13 @@ function wpext_display_image_field( $field_id, $field ) {
 	$id = str_replace( array('[', ']'), '_', $field_id );
 	extract( $field );
 
-	$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+	switch( $source ) :
+		case 'posts' :
+			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			break;
+		default:
+			$value_override = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
 
 	?>
 
@@ -446,6 +564,128 @@ function wpext_display_image_field( $field_id, $field ) {
 	<?php
 }
 
+
+/**
+ * A field that allows the uploading of a file using the media uploader
+ *
+ * @param field_id 	the fields id
+ * @param field 	the field options:
+ *		field[value] - the section title
+ *
+ * @since 1.0
+ * @author shannon
+ */
+function wpext_display_file_field( $field_id, $field, $source = 'posts' ) {
+
+	extract( $field );
+
+	global $post;
+
+	$id = str_replace( array('[', ']'), '_', $field_id );
+	extract( $field );
+
+	switch( $source ) :
+		case 'posts' :
+			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			break;
+		default:
+			$value_override = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
+
+	?>
+
+	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
+	
+	<div class="widefat">
+		<input readonly name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" value='<?php echo $value_override; ?>' placeholder="<?php echo $placeholder; ?>" />
+		<input type="button" id="wcpt_<?php echo $id; ?>_button" class="wcpt_file_button button" value="Choose File" /><br/>
+	</div>
+
+	<p>
+		<?php if( $description ) : ?><em><?php echo $description; ?></em><?php endif; ?>
+
+		<script>
+			jQuery(function(){
+
+				jQuery('body').on('click', '.wcpt_file_button', function() {
+
+					var $this = jQuery(this);
+
+					if ( typeof wp !== 'undefined' && wp.media && wp.media.editor ) {
+
+						window.original_send = wp.media.editor.send.attachment;
+
+						wp.media.editor.send.attachment = function( a, b ) {
+							console.log('attach');
+						    $this.prev().val(b.url);
+					    };
+
+					    wp.media.editor.open( 'image' );
+
+					    window.original_send_to_editor = window.send_to_editor; 
+
+					    window.send_to_editor = function(html) {}
+
+					}
+
+				});
+
+				/* fix */
+				jQuery('.wcpt_file_button').on('click', function() {
+
+					var $this = jQuery(this);
+
+					if ( typeof wp !== 'undefined' && wp.media && wp.media.editor ) {
+
+						window.original_send = wp.media.editor.send.attachment;
+
+						wp.media.editor.send.attachment = function( a, b ) {
+							console.log('attach');
+						   	$this.prev().val(b.url);
+					    };
+
+					    wp.media.editor.open( 'image' );
+
+					    window.original_send_to_editor = window.send_to_editor; 
+
+					    window.send_to_editor = function(html) {}
+
+					}
+
+				});
+
+			});
+
+			if( typeof wcpt_file_uploads === 'undefined' || !wcpt_file_uploads ) {
+				
+				jQuery(function() {
+
+					wp.media.view.Modal.prototype.on('close', function(){ 
+
+						if( window.original_send ) {
+
+							wp.media.editor.send.attachment = window.original_send;
+							window.send_to_editor = window.original_send_to_editor;
+
+							window.original_send = false;
+
+						}
+
+					});
+
+				});
+
+				wcpt_file_uploads = true;
+
+			}
+			
+		</script>
+
+	</p>
+
+	<?php
+}
+
 /**
  * A field that produces a dropdown a list of posts this post can be related to
  *
@@ -456,7 +696,7 @@ function wpext_display_image_field( $field_id, $field ) {
  * @since 1.0
  * @author shannon
  */
-function wpext_display_posts_field( $field_id, $field ) {
+function wpext_display_posts_field( $field_id, $field, $source = 'posts' ) {
 	
 	global $post;
 	global $wcpt_prefix;
@@ -466,13 +706,25 @@ function wpext_display_posts_field( $field_id, $field ) {
 
 	$posts = array();
 
+	if( trim($post_types) )
+		$post_types = explode(',', trim($post_types));
+	else
+		$post_types = array('post');
+
 	$posts = get_posts( array(
-		'post_type' => explode(',', $post_types),
+		'post_type' => $post_types,
 		'posts_per_page' => -1,
 		'post_status' => 'publish'
 	) );
 
-	$current = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+	switch( $source ) :
+		case 'posts' :
+			$current = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			break;
+		default:
+			$current = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
+
 	if( !$current )
 		$current = $default_value;
 
@@ -500,12 +752,25 @@ add_action( 'wcpt_display_dropdown_field', 'wpext_display_select_field', 10, 2 )
 add_action( 'wcpt_display_array_field', 'wpext_display_array_field', 10, 2 );
 add_action( 'wcpt_display_settings-group_field', 'wpext_display_array_field', 10, 2 );
 add_action( 'wcpt_display_textarea_field', 'wpext_display_textarea_field', 10, 2 );
+add_action( 'wcpt_display_simple_textarea_field', 'wpext_display_simple_textarea_field', 10, 2 );
 add_action( 'wcpt_display_image_field', 'wpext_display_image_field', 10, 2 );
+add_action( 'wcpt_display_file_field', 'wpext_display_file_field', 10, 2 );
 add_action( 'wcpt_display_posts_field', 'wpext_display_posts_field', 10, 2 );
+add_action( 'wcpt_display_date_field', 'wpext_display_date_field', 10, 2 );
+
 
 add_action( 'wto_display_title_field', 'wpext_display_title_field', 10, 3 );
 add_action( 'wto_display_text_field', 'wpext_display_text_field', 10, 3 );
+add_action( 'wto_display_checkbox_field', 'wpext_display_checkbox_field', 10, 3 );
+add_action( 'wto_display_select_field', 'wpext_display_select_field', 10, 3 );
+add_action( 'wto_display_dropdown_field', 'wpext_display_select_field', 10, 3 );
 add_action( 'wto_display_array_field', 'wpext_display_array_field', 10, 3 );
 add_action( 'wto_display_settings-group_field', 'wpext_display_array_field', 10, 3 );
+add_action( 'wto_display_date_field', 'wpext_display_date_field', 10, 3 );
+add_action( 'wto_display_posts_field', 'wpext_display_posts_field', 10, 3 );
+add_action( 'wto_display_textarea_field', 'wpext_display_textarea_field', 10, 3 );
+add_action( 'wto_display_simple_textarea_field', 'wpext_display_simple_textarea_field', 10, 3 );
+add_action( 'wto_display_image_field', 'wpext_display_image_field', 10, 3 );
+add_action( 'wto_display_file_field', 'wpext_display_file_field', 10, 3 );
 
 ?>
