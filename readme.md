@@ -8,7 +8,7 @@ How to use
 
 #### In functions.php
 
-    require_once "includes/wp-extensions/init.php"
+    require_once "includes/wp-extensions/init.php";
     
     function products_post_type( $post_types ) {
 
