@@ -4,7 +4,7 @@
  * automatically create various custom post type and metaboxes
  */
 
-include_once "validators.php";
+require_once dirname(__FILE__)."/validators.php";
 
 function wcpt_init() {
 
@@ -18,7 +18,7 @@ function wcpt_init() {
 
 		$args = $cpt['args'];
 
-		$slug = $args['slug'] ? $args['slug'] : $id;
+		$slug = @$args['slug'] ? $args['slug'] : $id;
 
 		$defaults = array(
 			'rewrite' => array( 'slug' => $slug ),
@@ -56,7 +56,7 @@ function wcpt_add_meta_boxes() {
 	// loop through all custom post types to register
 	foreach( $post_types as $id => $cpt ) :
 
-		if( !$cpt['meta'] )
+		if( !isset($cpt['meta']) )
 			continue;
 
 		foreach( $cpt['meta'] as $m_id => $meta ):
@@ -106,8 +106,8 @@ function wcpt_save_meta_fields( $post_id ) {
 
 	$post_types = apply_filters( 'wcpt_get_post_types',  array() );
 
-	$id = $post->post_type;
-	$cpt = $post_types[ $id ];
+	$id = @$post->post_type;
+	$cpt = @$post_types[ $id ];
 
 
 	if( !isset( $post_types[ $id ] ) || !$cpt['meta'] )

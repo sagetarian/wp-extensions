@@ -22,9 +22,14 @@ function wpext_display_title_field( $field_id, $field, $source = 'posts' ) {
 		case 'posts' :
 			?><h4 id="wcpt_<?php echo $field_id; ?>"><?php echo $value; ?></h4><?php
 			break;
+		case 'add-taxonomy':
+			?><h3 id="wcpt_<?php echo $field_id; ?>"><?php echo $value; ?></h3><?php
+		case 'edit-taxonomy':
+			?></table><h3 id="wcpt_<?php echo $field_id; ?>"><?php echo $value; ?></h3><table class="form-table"><?php
+			break;
 		default:
 			?><p id="wcpt_<?php echo $field_id; ?>"><strong><?php echo $value; ?></strong></p><?php
-			if( $description ) : ?><p><?php echo $description; ?></p><?php endif; 
+			if( @$description ) : ?><p><?php echo $description; ?></p><?php endif; 
 	endswitch;
 
 }
@@ -50,24 +55,42 @@ function wpext_display_text_field( $field_id, $field, $source = 'posts' ) {
 	extract( $field );
 
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$value_override = isset($field['value_override']) ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
 		case 'posts' :
-			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			$value_override = isset($field['value_override']) ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
 			break;
 		default:
-			$value_override = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+			$value_override = isset($field['value_override']) ? $field['value_override'] : _wto_get_option( $field_id );
 	endswitch;
 
 	$value_override = htmlentities( $value_override, ENT_QUOTES );
 
-	?>
+	do_action( 'wpext_prefield', $source );
 
-	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
-	<p>
-		<input name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" class="widefat" value='<?php echo $value_override; ?>' placeholder="<?php echo $placeholder; ?>" />
-		<?php if( $description ) : ?><em><?php echo $description; ?></em><?php endif; ?>
-	</p>
+	if( @$name ) : 
+
+		do_action( 'wpext_prelabel', $source );
+
+		?><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?></label><?php
+
+		do_action( 'wpext_postlabel', $source );
+
+	endif; 
+
+		do_action( 'wpext_preinput', $source );
+
+	?>
+		<input name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" class="widefat" value='<?php echo $value_override; ?>' placeholder="<?php echo @$placeholder; ?>" />
+		<?php if( @$description ) : ?><em><?php echo $description; ?></em><?php endif; ?>
 
 	<?php
+
+		do_action( 'wpext_postinput', $source );
+
+	do_action( 'wpext_postfield', $source );
+
 }
 
 
@@ -92,24 +115,41 @@ function wpext_display_simple_textarea_field( $field_id, $field, $source = 'post
 	extract( $field );
 
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$value_override = isset($field['value_override']) ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
 		case 'posts' :
-			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			$value_override = isset($field['value_override']) ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
 			break;
 		default:
-			$value_override = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+			$value_override = isset($field['value_override']) ? $field['value_override'] : _wto_get_option( $field_id );
 	endswitch;
 
 	$value_override = htmlentities( $value_override, ENT_QUOTES );
 
+	do_action( 'wpext_prefield', $source );
+
+	if( @$name ) : 
+
+		do_action( 'wpext_prelabel', $source );
+
+		?><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?></label><?php
+
+		do_action( 'wpext_postlabel', $source );
+
+	endif; 
+
+		do_action( 'wpext_preinput', $source );
+
 	?>
-
-	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
-	<p>
 		<textarea name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" class="widefat"><?php echo $value_override; ?></textarea>
-		<?php if( $description ) : ?><em><?php echo $description; ?></em><?php endif; ?>
-	</p>
-
+		<?php if( @$description ) : ?><em><?php echo $description; ?></em><?php endif; ?>
+	
 	<?php
+
+		do_action( 'wpext_postinput', $source );
+
+	do_action( 'wpext_postfield', $source );
 }
 
 /**
@@ -133,6 +173,9 @@ function wpext_display_date_field( $field_id, $field, $source = 'posts' ) {
 	extract( $field );
 
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$value_override = $field['value_override'] ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
 		case 'posts' :
 			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
 			break;
@@ -144,7 +187,7 @@ function wpext_display_date_field( $field_id, $field, $source = 'posts' ) {
 
 	?>
 
-	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
+	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?></label></p><?php endif; ?>
 	<p>
 		<input name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" class="widefat datepicker" value='<?php echo $value_override; ?>' placeholder="<?php echo $placeholder; ?>" />
 		<?php if( $description ) : ?><em><?php echo $description; ?></em><?php endif; ?>
@@ -183,6 +226,9 @@ function wpext_display_checkbox_field( $field_id, $field, $source = 'posts' ) {
 	extract( $field );
 
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$value_override = $field['value_override'] ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
 		case 'posts' :
 			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
 			break;
@@ -224,27 +270,119 @@ function wpext_display_select_field( $field_id, $field, $source = 'posts' ) {
 	extract( $field );
 
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$value_override = @$field['value_override'] ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
 		case 'posts' :
-			$current = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			$current = @$field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
 			break;
 		default:
-			$current = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+			$current = @$field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
+
+	if( !$current )
+		$current = @$default_value;
+
+	?>
+
+	<?php if( @$name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?></label></p><?php endif; ?>
+	<p>
+		<select name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text">
+			<?php foreach( $options as $opt_value => $option ) : ?>
+			<option value='<?php echo isset($opt_value) ? $opt_value : $option; ?>' <?php selected( $opt_value ? $opt_value : $option, $current ); ?>><?php echo $option; ?></option>
+			<?php endforeach; ?>
+		</select>
+	</p>
+	<?php if( @$description ) : ?><p><em><?php echo $description; ?></em></p><?php endif; ?>
+
+	<?php
+}
+
+
+/**
+ * A field that acts as a select input
+ *
+ * @param field_id 	the fields id
+ * @param field 	the field options:
+ *		field[name] - the label of the input
+ *      field[value] - the checkboxes value
+ *      field[description] - a <em> description
+ *
+ * @since 1.0
+ * @author shannon
+ */
+function wpext_display_multiple_select_field( $field_id, $field, $source = 'posts' ) {
+	
+	global $post;
+	global $wcpt_prefix;
+
+	$id = str_replace( array('[', ']'), '_', $field_id );
+	extract( $field );
+
+	switch( $source ) :
+		case 'edit-taxonomy' :
+			$value_override = isset( $field['value_override'] ) ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
+		case 'posts' :
+			$current = isset( $field['value_override'] ) ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			break;
+		default:
+			$current = isset( $field['value_override'] ) ? $field['value_override'] : _wto_get_option( $field_id );
 	endswitch;
 
 	if( !$current )
 		$current = $default_value;
 
+	if( !isset( $description ) )
+		$description = 'Choose your options and drag them to the selection box.';
+
+	if( !isset( $options ) || !is_array( $options ) ) $options = array();
+
+	if( is_array( $sources ) ) foreach( $sources as $k => $s ) :
+
+		$s['display_source_id'] = ($k % 5) + 1;
+		$options = apply_filters( 'wpext_source_'.$s['type'], $options, $s );
+
+	endforeach;
+
+	wp_enqueue_script(  'wp-extension' );
+	wp_enqueue_script( 'jquery-ui-draggable' );
+	wp_enqueue_script( 'jquery-ui-droppable' );
+
 	?>
 
-	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
+	<?php if( @$name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?></label></p><?php endif; ?>
 	<p>
-		<select name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text">
-			<?php foreach( $options as $opt_value => $option ) : ?>
-			<option value='<?php echo $opt_value ? $opt_value : $option; ?>' <?php selected( $opt_value ? $opt_value : $option, $current ); ?>><?php echo $option; ?></option>
-			<?php endforeach; ?>
-		</select>
+
+			<ul class="wpext-multiple-select source" name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>">
+				<?php foreach( $options as $opt_value => $option ) : $val = isset($opt_value) ? $opt_value : $option; if( in_array( $val, $current ) ) continue; ?>
+				<li data-value='<?php echo $val; ?>'><?php echo $option; ?></li>
+				<?php endforeach; ?>
+			</ul>
+
+			<ul class="wpext-multiple-select destination" name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>-destination">
+				<?php foreach( $options as $opt_value => $option ) : $val = $opt_value ? $opt_value : $option; if( !in_array( $val, $current ) ) continue; ?>
+				<li data-value='<?php echo $val; ?>'><?php echo $option; ?></li>
+				<?php endforeach; ?>
+			</ul>
+
+			<div class="clear"></div>
+
+		<input class="template wpext-multiple-select" data-name="wcpt_<?php echo $field_id; ?>" type="hidden" />
+
+		<script>
+
+			jQuery(document).ready( function() {
+
+				try {
+					wpext_attach_multiple_select( "wcpt_<?php echo $id; ?>" );
+				} catch( exception ) { }
+
+			} );
+
+		</script>
 	</p>
-	<?php if( $description ) : ?><p><em><?php echo $description; ?></em></p><?php endif; ?>
+	<?php if( @$description ) : ?><p><em><?php echo $description; ?></em></p><?php endif; ?>
 
 	<?php
 }
@@ -270,7 +408,14 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
 		'delete_description' => __('Delete')
 	));
 
+	$display_source = $source;
+
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$pre_value = _wct_get_term_meta( $_GET['tag_ID'], $field_id, true );
+		case 'add-taxonomy':
+			$display_source = 'posts';
+			break;
 		case 'posts' :
 			$pre_value = _wcpt_get_post_meta( $post->ID, $field_id, true );
 			break;
@@ -286,9 +431,15 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
 		$have_textarea = true;
 	endforeach;
 
+	if( $source == 'edit-taxonomy' || $source == 'add-taxonomy' ) :
+	?>
+	</table>
+	<?php
+	endif;
+
 	?>
 
-	<table class="shippingrows widefat form-table" id="wcpt_<?php echo $field_id; ?>" cellspacing="0">
+	<table class="wpext-settings-group shippingrows widefat form-table" id="wcpt_<?php echo $field_id; ?>" cellspacing="0">
 
 		<thead><tr>
 			<th class="column-cb check-column" id="cb"><input type="checkbox" class="all" /></th>
@@ -300,7 +451,7 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
 		<tfoot><tr><th colspan="<?php echo $column_count; ?>" style="text-align:center;">
 			<a href="#" class="add button alignleft">+ <?php echo $add_description; ?></a>
 			<a href="#" class="remove button alignright"><?php echo $delete_description; ?></a>
-			<small><?php echo $description; ?></small>
+			<small><?php echo @$description; ?></small>
 		</th></tr></tfoot>
 
 		<tbody>
@@ -318,7 +469,7 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
 				<th class="check-column"><input type="checkbox" /></th>
 
 				<?php foreach( $field as $subfield_id => $subfield ) : if( !is_array( $subfield ) || !$subfield['type'] ) continue; $subfield['value_override'] = $row[$subfield_id]; ?>
-				<td><?php do_action( 'wcpt_display_'.$subfield['type'].'_field', $field_id.'['.$rows.']['.$subfield_id.']', $subfield, $source ); ?></td>
+				<td valign="top"><?php do_action( 'wcpt_display_'.$subfield['type'].'_field', $field_id.'['.$rows.']['.$subfield_id.']', $subfield, $display_source ); ?></td>
 				<?php endforeach; ?>
 
 			</tr>
@@ -335,7 +486,7 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
 				<th class="check-column"><input type="checkbox" /></th>
 
 				<?php $row = 0; foreach( $field as $subfield_id => $subfield ) : if( !is_array( $subfield ) || !$subfield['type'] ) continue; $row_id = '%name%'; if( $have_textarea ) $row_id = $row_count; ?>
-				<td><?php do_action( 'wcpt_display_'.$subfield['type'].'_field', $field_id.'['.$row_id.']['.$subfield_id.']', $subfield, $source ); ?></td>
+				<td valign="top"><?php do_action( 'wcpt_display_'.$subfield['type'].'_field', $field_id.'['.$row_id.']['.$subfield_id.']', $subfield, $display_source ); ?></td>
 				<?php endforeach; ?>
 
 			</tr>
@@ -365,8 +516,15 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
 						var src = $this.attr('name').replace('%name%', row);
 						$this.attr('name', src);
 					});
+					jQuery(this).find('[id]').each( function() {
+						var $this = jQuery(this);
+						var src = $this.attr('id').replace('%name%', row);
+						$this.attr('id', src);
+					});
 					++row;
 				});
+
+				jQuery( 'body' ).trigger( 'wpext-add-row' );
 
 
 				e.preventDefault();
@@ -405,6 +563,13 @@ function wpext_display_array_field( $field_id, $field, $source = 'posts' ) {
 	</script>
 
 	<?php
+
+	if( $source == 'edit-taxonomy' || $source == 'add-taxonomy' ) :
+	?>
+	<table class="form-table">
+	<?php
+	endif;
+
 }
 
 /**
@@ -425,17 +590,38 @@ function wpext_display_textarea_field( $field_id, $field, $source = 'posts' ) {
 	extract( $field );
 
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$content = @$field['value_override'] ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
 		case 'posts' :
-			$content = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			$content = @$field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
 			break;
 		default:
-			$content = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+			$content = @$field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+	endswitch;
+
+	switch( $source ) :
+		case 'add-taxonomy':
+			?><div><label for="tag-description"><?php echo $name; ?></label><?php
+			break;
+		case 'edit-taxonomy':
+			?><tr><th scope="row" valign="top"><label for="tag-description"><?php echo $name; ?></label></th><td><?php
+			break;
 	endswitch;
 
 	wp_editor( $content, 'wcpt_'.$id, array(
-		'media_buttons' => false,
+		'media_buttons' => (isset($media) && $media ? true : false),
 		'textarea_name' => 'wcpt_'.$field_id,
 	) );
+
+	switch( $source ) :
+		case 'add-taxonomy':
+			?></div class="form-field"><?php
+			break;
+		case 'edit-taxonomy':
+			?></td></tr><?php
+			break;
+	endswitch;
 
 }
 
@@ -459,6 +645,9 @@ function wpext_display_image_field( $field_id, $field, $source = 'posts' ) {
 	extract( $field );
 
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$value_override = $field['value_override'] ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
 		case 'posts' :
 			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
 			break;
@@ -468,7 +657,7 @@ function wpext_display_image_field( $field_id, $field, $source = 'posts' ) {
 
 	?>
 
-	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
+	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?></label></p><?php endif; ?>
 	
 	<div class="widefat">
 		<input readonly name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" value='<?php echo $value_override; ?>' placeholder="<?php echo $placeholder; ?>" />
@@ -585,6 +774,9 @@ function wpext_display_file_field( $field_id, $field, $source = 'posts' ) {
 	extract( $field );
 
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$value_override = $field['value_override'] ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
 		case 'posts' :
 			$value_override = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
 			break;
@@ -594,7 +786,7 @@ function wpext_display_file_field( $field_id, $field, $source = 'posts' ) {
 
 	?>
 
-	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
+	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?></label></p><?php endif; ?>
 	
 	<div class="widefat">
 		<input readonly name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text" value='<?php echo $value_override; ?>' placeholder="<?php echo $placeholder; ?>" />
@@ -718,19 +910,22 @@ function wpext_display_posts_field( $field_id, $field, $source = 'posts' ) {
 	) );
 
 	switch( $source ) :
+		case 'edit-taxonomy' :
+			$value_override = @$field['value_override'] ? $field['value_override'] : _wct_get_term_meta( $_GET['tag_ID'], $field_id );
+			break;
 		case 'posts' :
-			$current = $field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
+			$current = @$field['value_override'] ? $field['value_override'] : _wcpt_get_post_meta( $post->ID, $field_id );
 			break;
 		default:
-			$current = $field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
+			$current = @$field['value_override'] ? $field['value_override'] : _wto_get_option( $field_id );
 	endswitch;
 
 	if( !$current )
-		$current = $default_value;
+		$current = @$default_value;
 
 	?>
 
-	<?php if( $name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?>:</label></p><?php endif; ?>
+	<?php if( @$name ) : ?><p><label  for="wcpt_<?php echo $field_id; ?>"><?php echo $name; ?></label></p><?php endif; ?>
 	<p>
 		<select class="widefat" name="wcpt_<?php echo $field_id; ?>" id="wcpt_<?php echo $id; ?>" type="text">
 			<option value="0">None</option>
@@ -739,7 +934,7 @@ function wpext_display_posts_field( $field_id, $field, $source = 'posts' ) {
 			<?php endforeach; ?>
 		</select>
 	</p>
-	<?php if( $description ) : ?><p><em><?php echo $description; ?></em></p><?php endif; ?>
+	<?php if( @$description ) : ?><p><em><?php echo $description; ?></em></p><?php endif; ?>
 
 	<?php
 }
@@ -748,6 +943,7 @@ add_action( 'wcpt_display_title_field', 'wpext_display_title_field', 10, 3 );
 add_action( 'wcpt_display_text_field', 'wpext_display_text_field', 10, 3 );
 add_action( 'wcpt_display_checkbox_field', 'wpext_display_checkbox_field', 10, 2 );
 add_action( 'wcpt_display_select_field', 'wpext_display_select_field', 10, 2 );
+add_action( 'wcpt_display_multiple_select_field', 'wpext_display_multiple_select_field', 10, 3 );
 add_action( 'wcpt_display_dropdown_field', 'wpext_display_select_field', 10, 2 );
 add_action( 'wcpt_display_array_field', 'wpext_display_array_field', 10, 2 );
 add_action( 'wcpt_display_settings-group_field', 'wpext_display_array_field', 10, 2 );
@@ -763,6 +959,7 @@ add_action( 'wto_display_title_field', 'wpext_display_title_field', 10, 3 );
 add_action( 'wto_display_text_field', 'wpext_display_text_field', 10, 3 );
 add_action( 'wto_display_checkbox_field', 'wpext_display_checkbox_field', 10, 3 );
 add_action( 'wto_display_select_field', 'wpext_display_select_field', 10, 3 );
+add_action( 'wto_display_multiple_select_field', 'wpext_display_multiple_select_field', 10, 3 );
 add_action( 'wto_display_dropdown_field', 'wpext_display_select_field', 10, 3 );
 add_action( 'wto_display_array_field', 'wpext_display_array_field', 10, 3 );
 add_action( 'wto_display_settings-group_field', 'wpext_display_array_field', 10, 3 );
@@ -772,5 +969,95 @@ add_action( 'wto_display_textarea_field', 'wpext_display_textarea_field', 10, 3 
 add_action( 'wto_display_simple_textarea_field', 'wpext_display_simple_textarea_field', 10, 3 );
 add_action( 'wto_display_image_field', 'wpext_display_image_field', 10, 3 );
 add_action( 'wto_display_file_field', 'wpext_display_file_field', 10, 3 );
+
+add_action( 'wct_display_title_field', 'wpext_display_title_field', 10, 3 );
+add_action( 'wct_display_text_field', 'wpext_display_text_field', 10, 3 );
+add_action( 'wct_display_simple_textarea_field', 'wpext_display_simple_textarea_field', 10, 3 );
+add_action( 'wct_display_textarea_field', 'wpext_display_textarea_field', 10, 3 );
+add_action( 'wct_display_settings-group_field', 'wpext_display_array_field', 10, 3 );
+add_action( 'wct_display_array_field', 'wpext_display_array_field', 10, 3 );
+
+function wpext_prefield( $source ) {
+	
+	switch( $source ): 
+		case 'add-taxonomy':
+			?><div class="form-field"><?php
+			break;
+		case 'edit-taxonomy':
+			?><tr class="form-field"><?php
+	endswitch;
+
+}
+
+function wpext_postfield( $source ) {
+	switch( $source ): 
+		case 'add-taxonomy':
+			?></div><?php
+			break;
+		case 'edit-taxonomy':
+			?></tr><?php
+	endswitch;
+}
+
+function wpext_prelabel( $source ) {
+	
+	switch( $source ): 
+		case 'add-taxonomy':
+			break;
+		case 'edit-taxonomy':
+			?><th scope="row" valign="top"><?php
+			break;
+		default:
+			?><p><?php
+	endswitch;
+
+}
+
+function wpext_postlabel( $source ) {
+	switch( $source ): 
+		case 'add-taxonomy':
+			break;
+		case 'edit-taxonomy':
+			?></th><?php
+			break;
+		default:
+			?></p><?php
+	endswitch;
+}
+
+
+
+function wpext_preinput( $source ) {
+	
+	switch( $source ): 
+		case 'add-taxonomy':
+			break;
+		case 'edit-taxonomy':
+			?><td><?php
+			break;
+		default:
+			?><p><?php
+	endswitch;
+
+}
+
+function wpext_postinput( $source ) {
+	switch( $source ): 
+		case 'add-taxonomy':
+			break;
+		case 'edit-taxonomy':
+			?></td><?php
+			break;
+		default:
+			?></p><?php
+	endswitch;
+}
+
+add_action( 'wpext_prefield', 'wpext_prefield' );
+add_action( 'wpext_postfield', 'wpext_postfield' );
+add_action( 'wpext_prelabel', 'wpext_prelabel' );
+add_action( 'wpext_postlabel', 'wpext_postlabel' );
+add_action( 'wpext_preinput', 'wpext_preinput' );
+add_action( 'wpext_postinput', 'wpext_postinput' );
 
 ?>

@@ -4,7 +4,7 @@
  * automatically create various theme options for the wordpress backend
  */
 
-include_once "validators.php";
+require_once dirname(__FILE__)."/validators.php";
 
 /**
  * register the theme options page
@@ -25,7 +25,8 @@ function wto_theme_options_admin_menu() {
  * @author shannon
  */
 function wto_theme_options_admin_init() {
-    wp_enqueue_style( 'wp-extension', get_template_directory_uri().'/inc/wp-extensions/view/admin-style.css', array(), 1.0 );
+    wp_enqueue_style( 'wp-extension', WPEXT_URL.'/view/admin-style.css', array(), 1.0 );
+	wp_register_script(  'wp-extension', WPEXT_URL.'/view/admin-script.js', array('jquery'), 1.0, true );
     if( isset( $_GET['page'] ) && $_GET['page'] == 'theme-options' ) wp_enqueue_media();
 }
 
@@ -63,7 +64,7 @@ function wto_options_page() {
 		if( $option_group['fields'] ) foreach( $option_group['fields'] as $field_id => $field ) : 
 
 			if( $field['type'] != 'title' ) :
-				?><tr><td><label for="wcpt_<?php echo $field_id; ?>"><?php echo $field['name']; ?></label></td><td><?php 
+				?><tr><td><label for="wcpt_<?php echo $field_id; ?>"><?php echo @$field['name']; ?></label></td><td><?php 
 				unset( $field['name'] );
 			else:
 				?><tr><td colspan="2"><?php 
@@ -139,7 +140,7 @@ function _wto_get_option( $option_id, $skip_empty_rows = false ) {
 
 	endif;
 
-	return stripslashes_deep( $wto_options[ $option_id ] );
+	return stripslashes_deep( @$wto_options[ $option_id ] );
 }
 
 function _wto_update_option( $option_id, $value ) {
@@ -160,12 +161,17 @@ function _wto_save() {
 
 		if( $option_group['fields'] ) foreach( $option_group['fields'] as $field_id => $field ) :
 
+			if( !isset( $_POST['wcpt_'.$field_id] ) )
+				continue;
+
 			$value = $_POST['wcpt_'.$field_id];
-			if( $field['validator'] )
+
+			if( @$field['validator'] )
 				$value = apply_filters( 'wto_validate_'.$field['validator'], $value );
+			
 			_wto_update_option( $field_id, $value );
 
-			if( $field['trigger'] )
+			if( @$field['trigger'] )
 				do_action( $field['trigger'], $field );
 
 		endforeach;
@@ -175,4 +181,4 @@ function _wto_save() {
 	$wto_saved = true;
 }
 
-if( $_POST['wpext_save'] ) add_action('init', '_wto_save');
+if( isset($_POST['wpext_save']) ) add_action('init', '_wto_save');
